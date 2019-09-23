@@ -73,12 +73,12 @@ router_create (uint8_t *mac, ip6_addr_t *ip)
 }
 
 struct router *
-find_router( ip6_addr_t *ip )
+find_router( ip6_addr_t ip )
 {
 	struct router *n = NULL;
 
 	for (n = first_router; n != NULL ; n=n->next)
-		if (ip6_cmp (&(n->ip), ip))
+		if (ip6_cmp ((n->ip), ip))
 			return n; /* router is already in list*/
 
 	return NULL; /* router is unknown */
@@ -159,12 +159,12 @@ neighbor_create (uint8_t *packet, struct packeth *headers)
  *         NULL    - Neighbor not found
  */
 struct neighbor *
-find_neighbor (ip6_addr_t *ip)
+find_neighbor (ip6_addr_t ip)
 {
 	struct neighbor *n = NULL;
 
 	for (n = first_neighbor; n != NULL ; n=n->next) {
-		if (ip6_cmp (&(n->ip), ip)) {
+		if (ip6_cmp ((n->ip), ip)) {
 			return n; /* neighbor is already in cache */
 		}
 	}

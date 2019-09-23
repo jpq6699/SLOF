@@ -170,7 +170,7 @@ handle_ra (struct icmp6hdr *icmp6h, uint8_t *ip6_packet)
 	ra = (struct router_advertisement *) &icmp6h->icmp6body.ra;
 	rtr_ip = (ip6_addr_t *) &ip6h->src;
 
-	rtr = find_router (&(ip6h->src));
+	rtr = find_router ((ip6h->src));
 	if (!rtr) {
 		rtr = router_create (rtr_mac, rtr_ip);
 		router_add (rtr);
@@ -344,7 +344,7 @@ handle_na (int fd, uint8_t *packet)
 
 	memcpy(&(ip.addr), &(headers.ip6h->src), IPV6_ADDR_LENGTH);
 
-	n = find_neighbor (&ip);
+	n = find_neighbor (ip);
 
 	if (!n) {
 		n= (struct neighbor *)

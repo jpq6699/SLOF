@@ -116,15 +116,12 @@ ip6_addr_t *get_ipv6_address(void)
  * @return 0 - IPv6 address is not in list
  *         1 - IPv6 address is in list
  */
-static int8_t find_ip6addr(ip6_addr_t *ip)
+static int8_t find_ip6addr(ip6_addr_t ip)
 {
 	struct ip6addr_list_entry *n = NULL;
 
-	if (ip == NULL)
-	    return 0;
-
 	for (n = first_ip6; n != NULL ; n=n->next)
-		if (ip6_cmp (&(n->addr), ip))
+		if (ip6_cmp ((n->addr), ip))
 			return 1; /* IPv6 address is in  our list*/
 
 	return 0; /* not one of our IPv6 addresses*/
@@ -149,7 +146,7 @@ int8_t handle_ipv6(int fd, uint8_t * ip6_packet, uint32_t packetsize)
 	ip6 = (struct ip6hdr *) ip6_packet;
 
 	/* Only handle packets which are for us */
-	if (! find_ip6addr(&(ip6->dst)))
+	if (! find_ip6addr((ip6->dst)))
 		return -1;
 
 	if (packetsize < sizeof(struct ip6hdr))
@@ -307,7 +304,7 @@ int8_t ip6addr_add(struct ip6addr_list_entry *new_address)
 		return 0;
 
 	 /* Don't add the same address twice */
-	if (find_ip6addr (&(new_address->addr)))
+	if (find_ip6addr ((new_address->addr)))
 		return 0;
 
 	/* If address is a unicast address, we also have to process packets
@@ -379,9 +376,9 @@ static void ipv6_init(int fd)
  * @param  ip6_addr ip_1
  * @param  ip6_addr ip_2
  */
-int8_t ip6_cmp(ip6_addr_t *ip_1, ip6_addr_t *ip_2)
+int8_t ip6_cmp(ip6_addr_t ip_1, ip6_addr_t ip_2)
 {
-	return ((int8_t) !memcmp( &(ip_1->addr[0]), &(ip_2->addr[0]),
+	return ((int8_t) !memcmp( (ip_1.addr), (ip_2.addr),
 		IPV6_ADDR_LENGTH ));
 }
 
@@ -503,7 +500,7 @@ int send_ipv6(int fd, void* buffer, int len)
 	if(len + sizeof(struct ethhdr) > ETH_MTU_SIZE)
 		return -1;
 
-	if ( ip6_cmp (&ip6h->src, &null_ip6))
+	if ( ip6_cmp (ip6h->src, null_ip6))
 		memcpy (&(ip6h->src), get_ipv6_address(), IPV6_ADDR_LENGTH);
 
 	if (ip6h->nh == 17) {//UDP
@@ -531,7 +528,7 @@ int send_ipv6(int fd, void* buffer, int len)
 		mac_addr = gw ? gw->mac : null_mac;
 	} else {
 		/* Normal unicast, so use neighbor cache to look up MAC */
-		struct neighbor *n = find_neighbor (&ip_dst);
+		struct neighbor *n = find_neighbor (ip_dst);
 		if (n) {				/* Already cached ? */
 			if (memcmp(n->mac, null_mac, ETH_ALEN) != 0)
 				mac_addr = n->mac;		/* found it */
