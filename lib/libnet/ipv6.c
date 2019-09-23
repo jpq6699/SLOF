@@ -442,23 +442,22 @@ static unsigned short ip6_checksum(struct ip6hdr *ip6h, unsigned short *packet,
 {
 	int i=0;
 	unsigned long checksum;
-	struct ip6hdr pseudo_ip6h;
-	unsigned short *pip6h;
+	const int ip6size = sizeof(struct ip6hdr)/sizeof(unsigned short);
+	union {
+		struct ip6hdr ip6h;
+		unsigned short raw[ip6size];
+	} pseudo;
 
-	memcpy (&pseudo_ip6h, ip6h, sizeof(struct ip6hdr));
-	pseudo_ip6h.hl	      = ip6h->nh;
-	pseudo_ip6h.ver_tc_fl = 0;
-	pseudo_ip6h.nh	      = 0;
-	pip6h = (unsigned short *) &pseudo_ip6h;
+	memcpy (&pseudo.ip6h, ip6h, sizeof(struct ip6hdr));
+	pseudo.ip6h.hl	      = ip6h->nh;
+	pseudo.ip6h.ver_tc_fl = 0;
+	pseudo.ip6h.nh	      = 0;
 
-	for (checksum = 0; words > 0; words--) {
+	for (checksum = 0; words > 0; words--)
 		checksum += *packet++;
-		i++;
-	}
 
-	for (i = 0; i < 20; i++) {
-		checksum += *pip6h++;
-	}
+	for (i = 0; i < ip6size; i++)
+		checksum += pseudo.raw[i];
 
 	checksum = (checksum >> 16) + (checksum & 0xffff);
 	checksum += (checksum >> 16);
